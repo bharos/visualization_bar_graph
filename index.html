@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+
+svg
+{
+    background-color: #c5d8d8;
+    display: block;
+}
+
+
+.dropbtn {
+    background-color: #4CAF50;
+    color: white;
+    padding: 10px;
+    margin-bottom: 5px;
+    font-size: 16px;
+    border: none;
+    cursor: pointer;
+}
+
+.dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+.dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: #f9f9f9;
+    min-width: 160px;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    z-index: 1;
+}
+
+.dropdown-content a {
+    color: black;
+    padding: 7px 14px;
+    text-decoration: none;
+    display: block;
+}
+
+.dropdown-content a:hover {background-color: #f1f1f1}
+
+.dropdown:hover .dropdown-content {
+    display: block;
+}
+
+.dropdown:hover .dropbtn {
+    background-color: #3e8e41;
+}
+.no-mouse {
+    pointer-events: none;
+}
+</style>
+<div class="dropdown">
+  <button class="dropbtn">Select Variable</button>
+  <div class="dropdown-content">
+  </div>
+</div>
+<div id="bar-chart"></div>
+
+<script src="d3/d3.v4.min.js"></script>
+
+<script>
+
+  var a1 = [];
+      var a2 = [];
+      var a3 = [];
+      var a4 = [];
+var svg;
+var w = 750;
+var h = 220;
+var paddingTop = 20;
+var binWidth = 0;
+var binDivisions = 5;
+var mousePosition = {
+    x:undefined,
+    y:undefined
+}
+
+dataset = [];
+      var click_handler = function(var_name) {
+        // console.log(var_name);
+        if(var_name == 'age')
+        {
+            dataset = a1;
+            redraw();
+        }
+        else if(var_name == 'college')
+        {
+            dataset = a2;
+            redraw();
+        }
+        else if(var_name == 'delay')
+        {
+            dataset = a4;
+                redraw();
+        }
+      }
+
+var init = function() {
+   
+   svg = d3.select("body")
+// .classed('no-mouse',true)
+            .append("svg")
+            .attr("width", w)
+            .attr("height", h)
+            .on('mousemove',function(d,i)
+    {
+var coordinates = d3.mouse(this);
+var x = coordinates[0];
+var y = coordinates[1];
+// console.log(x);
+// console.log(y);
+
+if(mousePosition.x == undefined)
+        mousePosition.x = 0;
+if(mousePosition.y == undefined)
+        mousePosition.y = 0;
+
+// console.log("DIFFFFFFFF     "+(x-mousePosition.x));
+if(x - mousePosition.x > 30)
+{
+    mousePosition.x = x;
+    if(binDivisions < 10)
+    {
+            binDivisions++;    
+            redraw();
+    }
+    
+}
+if(x - mousePosition.x < -30)
+{
+    mousePosition.x = x;
+        if(binDivisions > 2)
+        {
+            binDivisions--;
+            redraw();
+        }
+}
+
+  
+  
+  
+  
+
+
+
+    });
+      d3.csv("Marriage.csv", function(data) {
+        console.log(data.columns);
+        
+            d3.select('.dropdown-content').selectAll('a')
+            .data(data.columns).enter().append('.dropdown-content:a').attr('href','#')
+            .text(function(c)
+            {
+                console.log(c);
+                return c;
+            })
+            .on('click',function(d)
+            {
+                click_handler(d);
+            })
+        
+        data.forEach(function(d) {
+         a1.push((+d.age));
+         a2.push(+d.college);
+         a3.push(+d.hs);
+         a4.push(+d.delay);
+        })
+        dataset = a4;
+       redraw();
+      });
+      console.log(a4);
+         
+}
+
+
+var redraw = function(){
+
+var max_in_array =  Math. max.apply(null, dataset);
+var min_in_array =  Math. min.apply(null, dataset);
+console.log(max_in_array+" "+min_in_array);
+
+var frequencies = new Array(binDivisions+1).fill(0);
+
+binWidth = (max_in_array-min_in_array)/binDivisions;
+
+dataset.forEach(function(d)
+{
+        frequencies[Math.floor((d-min_in_array)/binWidth)]++;
+});
+
+var max_freq =  Math. max.apply(null, frequencies);
+var min_freq =  Math. min.apply(null, frequencies);
+
+
+
+
+console.log(binWidth);
+console.log(frequencies);
+if(svg != undefined)
+ svg.selectAll("*").remove(); 
+
+svg.selectAll("rect")
+   .data(frequencies)
+   .enter()
+   .append("rect")
+   .attr("x", 0)
+   .attr("y", function(d) 
+    {
+         // return h - (d * 4);
+        return ((max_freq-d)/max_freq)*200+20;
+    })
+   .attr("width", w/frequencies.length -25)
+   .attr("height", 200)
+     // .attr("pointer-events", "none")
+   // .transition()
+   //          .duration(200)
+   //          .delay(function (d, i) {
+   //              return i * 50;
+   //          })
+   .attr("x", function(d, i) {
+    return i * (w / frequencies.length);
+})
+//    .attr("height", function(d) {
+//     return d;
+// })
+.attr("fill", function(d)
+    {
+        return "rgb(0, 0, " + (d * 10) + ")";
+    })
+.on('mouseover',function(d,i)
+    {
+        // console.log("mouseover"+d);
+         d3.selectAll("text")
+                  .select(function(d, ind) { return ind === i ? this : null; })
+                  .style("opacity",1);
+
+        d3.select(this).attr('y',parseInt(d3.select(this).attr('y'))-3)
+        .attr('height',parseInt(d3.select(this).attr('height'))+3)
+        .attr('x',parseInt(d3.select(this).attr('x'))-2)
+        .attr('width',parseInt(d3.select(this).attr('width'))+4)
+
+
+    })
+.on('mouseout', function(d,i)
+    {
+        // console.log('mouseout'+d);
+// console.log(d3.select(this).attr('y'));
+d3.select(this).attr('y',parseInt(d3.select(this).attr('y'))+3)
+.attr('height',parseInt(d3.select(this).attr('height'))-3)
+.attr('x',parseInt(d3.select(this).attr('x'))+2)
+.attr('width',parseInt(d3.select(this).attr('width'))-4)
+         d3.selectAll("text")
+                  .select(function(d, ind) { return ind === i ? this : null; })
+                  .style("opacity",0)
+    })
+
+ svg.selectAll("text")
+   .data(frequencies)
+   .enter()
+   .append("text")
+    .text(function(d) {
+        return d;
+   })
+    .attr("x", function(d, i) {
+        return (i*(w / frequencies.length)+(binWidth)/2);
+   })
+   .attr("y", function(d) {
+        return ((max_in_array-d)/max_in_array)*200+12;
+   })
+   .attr('fill','white')
+   .style('opacity',0);
+
+}
+
+init();
+
+</script>

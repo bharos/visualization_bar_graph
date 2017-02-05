@@ -1,0 +1,21 @@
+<script type="text/javascript">
+    var allText =[];
+    var allTextLines = [];
+    var Lines = [];
+
+    var csvFile = new XMLHttpRequest();
+    csvFile.open("GET", "file://C:\wamp64\www\visualization_bar_graph/Marriage.csv", true);
+    csvFile.onreadystatechange = function()
+    {
+        allText = csvFile.responseText;
+        allTextLines = allText.split(/\r\n|\n/);
+    };
+
+    document.write(allTextLines);
+    document.write("<br>");
+    document.write(allText);
+    document.write("<br>");
+    document.write(csvFile);
+    console.log(csvFile);
+    document.write("<br>");
+</script>
