@@ -80,6 +80,14 @@ svg
       var a2 = [];
       var a3 = [];
       var a4 = [];
+
+
+
+var max_in_array;
+var min_in_array;
+var frequencies, max_freq, min_freq;
+
+var bar_mode = true //true => bar chart, false => pie chart
 var svg;
 var w = 750;
 var h = 220;
@@ -183,25 +191,6 @@ if(x - mousePosition.x < -30)
          
 }
 var drawPieChart = function() {
-    if(svg != undefined)
- svg.selectAll("*").remove(); 
-
-
-var max_in_array =  Math. max.apply(null, dataset);
-var min_in_array =  Math. min.apply(null, dataset);
-console.log(max_in_array+" "+min_in_array);
-
-var frequencies = new Array(binDivisions+1).fill(0);
-
-binWidth = (max_in_array-min_in_array)/binDivisions;
-
-dataset.forEach(function(d)
-{
-        frequencies[Math.floor((d-min_in_array)/binWidth)]++;
-});
-
-var max_freq =  Math. max.apply(null, frequencies);
-var min_freq =  Math. min.apply(null, frequencies);
 
  radius = Math.min(w, h) / 2;
 
@@ -264,7 +253,12 @@ var arcOver = d3.arc()
                   .transition()
                .duration(1000)
                   .style("opacity",0);
-           });
+           })
+          .on('click',function(d,i)
+   {
+        bar_mode = true;
+        redraw();
+   });
 
   var text = g.append("text")
       .attr("transform", function(d) { return "translate(" + labelArc.centroid(d) + ")"; })
@@ -278,34 +272,9 @@ var arcOver = d3.arc()
       .style('opacity',0);
 
 }
-
-var redraw = function(){
-
-var max_in_array =  Math. max.apply(null, dataset);
-var min_in_array =  Math. min.apply(null, dataset);
-console.log(max_in_array+" "+min_in_array);
-
-var frequencies = new Array(binDivisions+1).fill(0);
-
-binWidth = (max_in_array-min_in_array)/binDivisions;
-
-dataset.forEach(function(d)
+var drawBarChart = function()
 {
-        frequencies[Math.floor((d-min_in_array)/binWidth)]++;
-});
-
-var max_freq =  Math. max.apply(null, frequencies);
-var min_freq =  Math. min.apply(null, frequencies);
-
-
-
-
-console.log(binWidth);
-console.log(frequencies);
-if(svg != undefined)
- svg.selectAll("*").remove(); 
-
-bars  = svg.selectAll("rect")
+    bars  = svg.selectAll("rect")
    .data(frequencies)
    .enter()
    .append("rect")
@@ -326,7 +295,7 @@ bars  = svg.selectAll("rect")
   bars
   .attr('y',220)
   .transition()
-            .duration(500)
+            .duration(2000)
              .attr("y", function(d) 
     {
          // return h - (d * 4);
@@ -364,7 +333,8 @@ d3.select(this)
     })
    .on('click',function(d,i)
    {
-        drawPieChart();
+        bar_mode = false;
+        redraw();
    })
 
  svg.selectAll("text")
@@ -382,6 +352,41 @@ d3.select(this)
    })
    .attr('fill','green')
    .style('opacity',0);
+}
+var redraw = function(){
+
+    if(svg != undefined)
+ svg.selectAll("*").remove(); 
+
+max_in_array =  Math. max.apply(null, dataset);
+min_in_array =  Math. min.apply(null, dataset);
+console.log(max_in_array+" "+min_in_array);
+
+frequencies = new Array(binDivisions+1).fill(0);
+
+binWidth = (max_in_array-min_in_array)/binDivisions;
+
+dataset.forEach(function(d)
+{
+        frequencies[Math.floor((d-min_in_array)/binWidth)]++;
+});
+
+max_freq =  Math. max.apply(null, frequencies);
+min_freq =  Math. min.apply(null, frequencies);
+
+if(svg != undefined)
+ svg.selectAll("*").remove(); 
+
+
+if(bar_mode == true)
+{
+    drawBarChart();
+}
+else
+{
+    drawPieChart();
+}
+
 }
 
 init();
