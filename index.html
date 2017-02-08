@@ -83,7 +83,7 @@ text {
 </div>
 
 <div id ="scrollDiv"><span style="color:white;"><b>Mouse over here to change bin size</b></span></div>
-<button onClick = "force_layout()">Enable force layout graph</button>
+<input id="force_btn" type="button" onClick ="force_layout()" value="Show force layout graph">
 <script src="d3/d3.v4.min.js"></script>
 <script>
 
@@ -116,6 +116,15 @@ dataset = [];
 
 var force_layout = function()
 {
+    if(force_graph == false)
+    {
+        document.getElementById('force_btn').value = "Hide force layout graph";
+        
+    }
+    else
+    {
+            document.getElementById('force_btn').value = "Show force layout graph";
+    }
         force_graph = !force_graph;
         redraw();   
 }
@@ -243,7 +252,7 @@ d3.json("Miserables.json", function(error, graph) {
     .data(graph.nodes)
     .enter().append("circle")
       .attr("r", 5)
-      .attr("fill", function(d) { return color(d.category); })
+      .attr("fill", function(d) { return color(d.group); })
       .call(d3.drag()
           .on("start", dragstarted)
           .on("drag", dragged)
