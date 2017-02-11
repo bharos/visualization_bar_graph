@@ -1,13 +1,10 @@
 <!DOCTYPE html>
 <meta charset="utf-8">
 <style>
-
-svg
-{
+svg {
     background-color: #f5f5f5;
     display: block;
 }
-
 
 .dropbtn {
     background-color: #4CAF50;
@@ -29,7 +26,7 @@ svg
     position: absolute;
     background-color: #f9f9f9;
     min-width: 160px;
-    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
     z-index: 1;
 }
 
@@ -40,7 +37,9 @@ svg
     display: block;
 }
 
-.dropdown-content a:hover {background-color: #f1f1f1}
+.dropdown-content a:hover {
+    background-color: #f1f1f1
+}
 
 .dropdown:hover .dropdown-content {
     display: block;
@@ -49,9 +48,11 @@ svg
 .dropdown:hover .dropbtn {
     background-color: #3e8e41;
 }
+
 .no-mouse {
     pointer-events: none;
 }
+
 #scrollDiv {
     background-color: red;
     height: 30px;
@@ -59,453 +60,39 @@ svg
     display: block;
     margin-bottom: 20px;
 }
+
 #scrollDiv > span {
     margin-left: 200px;
 }
+
 text {
-    font-size : large;
+    font-size: large;
     font-weight: bold;
 }
+
 .links line {
-  stroke: #999;
-  stroke-opacity: 0.6;
+    stroke: #999;
+    stroke-opacity: 0.6;
 }
 
 .nodes circle {
-  stroke: #fff;
-  stroke-width: 1.5px;
+    stroke: #fff;
+    stroke-width: 1.5px;
 }
 </style>
 <div class="dropdown">
-  <button class="dropbtn">Select Variable</button>
-  <div class="dropdown-content">
-  </div>
+    <button class="dropbtn">Select Variable</button>
+    <div class="dropdown-content">
+    </div>
 </div>
-
-<div id ="scrollDiv"><span style="color:white;"><b>Mouse over here to change bin size</b></span></div>
-<input id="force_btn" type="button" onClick ="force_layout()" value="Show force layout graph">
+<div id="scrollDiv"><span style="color:white;"><b>Mouse over here to change bin size</b></span></div>
+<input id="force_btn" type="button" onClick="force_layout()" value="Show force layout graph">
 <script src="d3/d3.v4.min.js"></script>
+<script src="src/main.js"></script>
+<script src="src/force_directed.js"></script>
+<script src="src/pie_chart.js"></script>
+<script src="src/bar_chart.js"></script>
+<script src="src/redraw.js"></script>
 <script>
-
-  var a1 = [];
-      var a2 = [];
-      var a3 = [];
-      var a4 = [];
-
-
-
-var max_in_array;
-var min_in_array;
-var frequencies, max_freq, min_freq;
-
-var bar_mode = true; //true => bar chart, false => pie chart
-var force_graph = false;
-var svg;
-var w = 750;
-var h = 420;
-var paddingTop = 20;
-var binWidth = 0;
-var binDivisions = 5;
-var mousePosition = {
-    x:undefined,
-    y:undefined
-}
-var c20 = d3.schemeCategory20;
-console.log(c20);
-dataset = [];
-
-var force_layout = function()
-{
-    if(force_graph == false)
-    {
-        document.getElementById('force_btn').value = "Hide force layout graph";
-        
-    }
-    else
-    {
-            document.getElementById('force_btn').value = "Show force layout graph";
-    }
-        force_graph = !force_graph;
-        redraw();   
-}
-
-      var click_handler = function(var_name) {
-        // console.log(var_name);
-        if(var_name == 'age')
-        {
-            dataset = a1;
-            redraw();
-        }
-        else if(var_name == 'college')
-        {
-            dataset = a2;
-            redraw();
-        }
-        else if(var_name == 'delay')
-        {
-            dataset = a4;
-                redraw();
-        }
-      }
-
-var init = function() {
-   
-   svg = d3.select("body")
-// .classed('no-mouse',true)
-            .append("svg")
-            .attr("width", w)
-            .attr("height", h);
-
-            d3.select('#scrollDiv')
-            .on('mouseenter',function(d)
-            {
-
-            })
-            .on('mousemove',function(d,i)
-    {
-var coordinates = d3.mouse(this);
-var x = coordinates[0];
-var y = coordinates[1];
-// console.log(x);
-// console.log(y);
-
-if(mousePosition.x == undefined)
-        mousePosition.x = 0;
-if(mousePosition.y == undefined)
-        mousePosition.y = 0;
-
-if(x - mousePosition.x > 30)
-{
-    mousePosition.x = x;
-    if(binDivisions < 10)
-    {
-            binDivisions++;    
-            redraw();
-    }
-    
-}
-if(x - mousePosition.x < -30)
-{
-    mousePosition.x = x;
-        if(binDivisions >= 2)
-        {
-            binDivisions--;
-            redraw();
-        }
-}
-
-    });
-      d3.csv("test.csv", function(data) {
-        console.log(data.columns);
-        
-            d3.select('.dropdown-content').selectAll('a')
-            .data(data.columns).enter().append('.dropdown-content:a').attr('href','#')
-            .text(function(c)
-            {
-                console.log(c);
-                return c;
-            })
-            .on('click',function(d)
-            {
-                click_handler(d);
-            })
-        
-        data.forEach(function(d) {
-         a1.push((+d.age));
-         a2.push(+d.college);
-         a3.push(+d.hs);
-         a4.push(+d.delay);
-        })
-        dataset = a4;
-       redraw();
-      });
-      console.log(a4);
-         
-}
-
-var drawForceLayout = function() {
-
-   
-   var width = 750,
-    height = 420;
-
-var color = d3.scaleOrdinal(d3.schemeCategory20);
-
-var simulation = d3.forceSimulation()
-    .force("link", d3.forceLink().id(function(d) { return d.id; }))
-    .force("charge", d3.forceManyBody())
-    .force("center", d3.forceCenter(width / 2, height / 2));
-
-d3.json("Miserables.json", function(error, graph) {
-  if (error) throw error;
-
-  var link = svg.append("g")
-      .attr("class", "links")
-    .selectAll("line")
-    .data(graph.links)
-    .enter().append("line")
-      .attr("stroke-width", function(d) { return Math.sqrt(d.value); });
-
-  var node = svg.append("g")
-      .attr("class", "nodes")
-    .selectAll("circle")
-    .data(graph.nodes)
-    .enter().append("circle")
-      .attr("r", 5)
-      .attr("fill", function(d) { return color(d.group); })
-      .call(d3.drag()
-          .on("start", dragstarted)
-          .on("drag", dragged)
-          .on("end", dragended));
-
-  node.append("title")
-      .text(function(d) { return d.id; });
-
-  simulation
-      .nodes(graph.nodes)
-      .on("tick", ticked);
-
-  simulation.force("link")
-      .links(graph.links);
-
-  function ticked() {
-    link
-        .attr("x1", function(d) { return d.source.x; })
-        .attr("y1", function(d) { return d.source.y; })
-        .attr("x2", function(d) { return d.target.x; })
-        .attr("y2", function(d) { return d.target.y; });
-
-    node
-        .attr("cx", function(d) { return d.x; })
-        .attr("cy", function(d) { return d.y; });
-  }
-});
-
-function dragstarted(d) {
-  if (!d3.event.active) simulation.alphaTarget(0.3).restart();
-  d.fx = d.x;
-  d.fy = d.y;
-}
-
-function dragged(d) {
-  d.fx = d3.event.x;
-  d.fy = d3.event.y;
-}
-
-function dragended(d) {
-  if (!d3.event.active) simulation.alphaTarget(0);
-  d.fx = null;
-  d.fy = null;
-}
-
-
-}
-
-var drawPieChart = function() {
-
- radius = Math.min(w, h) / 2;
-
-var arc = d3.arc()
-    .outerRadius(radius - 40)
-    .innerRadius(0);
-
-var labelArc = d3.arc()
-    .outerRadius(radius - 70)
-    .innerRadius(radius - 70);
-
-var pie = d3.pie()
-    .sort(null)
-    .value(function(d) { return d; });
-
-var arcOver = d3.arc()
-        .outerRadius(radius-20)
-         .innerRadius(0);
-
-  var mainGroup = svg.append("g")
-    .attr("transform", "translate(" + w / 2 + "," + h / 2 + ")");
-
-  var g = mainGroup.selectAll(".arc")
-      .data(pie(frequencies))
-    .enter().append("g")
-      .attr("class", "arc");
-
-  var path = g.append("path")
-      .attr("d", arc)
-      .style("fill",'#f5f5f5');
-
-      path
-      //.transition().duration(2000)
-      .style("fill", function(d,i) { return c20[i%20]; })
-
-       path.on("mouseenter", function(d,i) {
-            console.log("TTTTTTT");
-            d3.select(this)
-               .attr("stroke","white")
-               .transition()
-               .duration(1000)
-               .attr("d", arcOver)             
-               .attr("stroke-width",2);
-
-          d3.selectAll("text")
-                  .select(function(d, ind) { return ind === i ? this : null; })
-                  .transition()
-               .duration(1000)
-                  .style("opacity",1);
-      
-      
-
-        })  .on("mouseleave", function(d,i) {
-            d3.select(this)
-            .transition().duration(1000)            
-               .attr("d", arc)
-               .attr("stroke","none")
-
-                 d3.selectAll("text")
-                  .select(function(d, ind) { return ind === i ? this : null; })
-                  .transition()
-               .duration(1000)
-                  .style("opacity",0);
-           })
-          .on('click',function(d,i)
-   {
-        bar_mode = true;
-        redraw();
-   });
-
-  var text = g.append("text")
-      .attr("transform", function(d) { return "translate(" + labelArc.centroid(d) + ")"; })
-      .attr("dy", ".35em")
-      .text(function(d) { return d.data; });
-      
-      text.style('opacity',0)
-      .transition().duration(2200)
-      .style('opacity',1)
-      .transition().duration(500)
-      .style('opacity',0);
-
-}
-var drawBarChart = function()
-{
-
-    bars  = svg.selectAll("rect")
-   .data(frequencies)
-   .enter()
-   .append("rect")
-   .attr("x", 0)
-   .attr("width", w/frequencies.length -10)
-   .attr("height", 400)
-   .attr("x", function(d, i) {
-    return i * (w / frequencies.length);
-})
-//    .attr("height", function(d) {
-//     return d;
-// })
-.attr("fill", function(d, i)
-    {
-        return c20[i%20];
-    });
-
-
-  bars
-  .attr('y',420)
-  .transition()
-            .duration(2000)
-             .attr("y", function(d) 
-    {
-         // return h - (d * 4);
-        return ((max_freq-d)/max_freq)*400+20;
-    })
-            
-
-bars.on('mouseover',function(d,i)
-    {
-        // console.log("mouseover"+d);
-         d3.selectAll("text")
-                  .select(function(d, ind) { return ind === i ? this : null; })
-                  .style("opacity",1);
-
-        d3.select(this)
-        .attr('y',parseInt(d3.select(this).attr('y'))-6)
-        .attr('height',parseInt(d3.select(this).attr('height'))+6)
-        .attr('x',parseInt(d3.select(this).attr('x'))-4)
-        .attr('width',parseInt(d3.select(this).attr('width'))+6)
-
-
-    })
-.on('mouseout', function(d,i)
-    {
-        // console.log('mouseout'+d);
-// console.log(d3.select(this).attr('y'));
-d3.select(this)
-.attr('y',parseInt(d3.select(this).attr('y'))+6)
-.attr('height',parseInt(d3.select(this).attr('height'))-6)
-.attr('x',parseInt(d3.select(this).attr('x'))+4)
-.attr('width',parseInt(d3.select(this).attr('width'))-6)
-         d3.selectAll("text")
-                  .select(function(d, ind) { return ind === i ? this : null; })
-                  .style("opacity",0);
-    })
-   .on('click',function(d,i)
-   {
-        bar_mode = false;
-        force_graph = false;
-        redraw();
-   })
-
- svg.selectAll("text")
-   .data(frequencies)
-   .enter()
-   .append("text")
-    .text(function(d) {
-        return d;
-   })
-    .attr("x", function(d, i) {
-        return (i*(w / frequencies.length)+(w/frequencies.length)/2-10);
-   })
-   .attr("y", function(d) {
-        return ((max_freq-d)/max_freq)*400+12;
-   })
-   .attr('fill','green')
-   .style('opacity',0);
-}
-var redraw = function(){
-
-    if(svg != undefined)
- svg.selectAll("*").remove(); 
-
-max_in_array =  Math. max.apply(null, dataset);
-min_in_array =  Math. min.apply(null, dataset);
-console.log(max_in_array+" "+min_in_array);
-
-frequencies = new Array(binDivisions+1).fill(0);
-
-binWidth = (max_in_array-min_in_array)/binDivisions;
-
-dataset.forEach(function(d)
-{
-        frequencies[Math.floor((d-min_in_array)/binWidth)]++;
-});
-
-max_freq =  Math. max.apply(null, frequencies);
-min_freq =  Math. min.apply(null, frequencies);
-
-if(svg != undefined)
- svg.selectAll("*").remove(); 
-
-
-if(force_graph == true)
-    drawForceLayout();
-else if(bar_mode == true)
-{
-    drawBarChart();
-}
-else
-{
-    drawPieChart();
-}
-
-}
-
 init();
-
 </script>
