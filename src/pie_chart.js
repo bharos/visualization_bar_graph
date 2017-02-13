@@ -13,7 +13,8 @@ var drawPieChart = function() {
     var pie = d3.pie()
         .sort(null)
         .value(function(d) {
-            return d; });
+            return d;
+        });
 
     var arcOver = d3.arc()
         .outerRadius(radius - 20)
@@ -33,7 +34,8 @@ var drawPieChart = function() {
 
     path
         .style("fill", function(d, i) {
-            return c20[i % 20]; })
+            return c20[i % 20];
+        })
 
     path.on("mouseenter", function(d, i) {
             d3.select(this)
@@ -45,7 +47,8 @@ var drawPieChart = function() {
 
             d3.selectAll("text")
                 .select(function(d, ind) {
-                    return ind === i ? this : null; })
+                    return ind === i ? this : null;
+                })
                 .transition()
                 .duration(1000)
                 .style("opacity", 1);
@@ -60,7 +63,8 @@ var drawPieChart = function() {
 
             d3.selectAll("text")
                 .select(function(d, ind) {
-                    return ind === i ? this : null; })
+                    return ind === i ? this : null;
+                })
                 .transition()
                 .duration(1000)
                 .style("opacity", 0);
@@ -72,10 +76,13 @@ var drawPieChart = function() {
 
     var text = g.append("text")
         .attr("transform", function(d) {
-            return "translate(" + labelArc.centroid(d) + ")"; })
+            return "translate(" + labelArc.centroid(d) + ")";
+        })
         .attr("dy", ".35em")
         .text(function(d) {
-            return d.data; });
+            if (d.data != 0)
+                return d.data;
+        });
 
     text.style('opacity', 0)
         .transition().duration(2200)

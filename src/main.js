@@ -2,6 +2,7 @@ var a1 = [];
 var a2 = [];
 var a3 = [];
 var a4 = [];
+var a5 = [];
 
 var max_in_array;
 var min_in_array;
@@ -23,18 +24,36 @@ var c20 = d3.schemeCategory20;
 
 dataset = [];
 
-var click_handler = function(var_name) {
-    // console.log(var_name);
-    if (var_name == 'age') {
+var click_handler = function() {
+    
+      var selectBox = document.getElementById("select-var");
+    var var_name = selectBox.options[selectBox.selectedIndex].value;
+    
+    console.log(var_name);
+    if (var_name == 'X1') {
         dataset = a1;
         redraw();
-    } else if (var_name == 'college') {
+    } 
+     else if (var_name == 'X2') {
         dataset = a2;
         redraw();
-    } else if (var_name == 'delay') {
-        dataset = a4;
-        redraw();
     }
+    else if(var_name == 'X3')
+    {
+    	dataset = a3;
+    	redraw();
+    }
+    else if(var_name == 'X4')
+    {
+    	dataset = a4;
+    	redraw();
+    }
+    else if(var_name == 'Y')
+    {
+    	dataset = a5;
+    	redraw();
+    }
+    console.log(dataset);
 }
 
 var init = function() {
@@ -47,14 +66,16 @@ var init = function() {
 
     d3.select('#scrollDiv')
         .on('mouseenter', function(d) {
-
+        	var coordinates = d3.mouse(this);
+            var x = coordinates[0];
+            var y = coordinates[1];
+        	mousePosition.x = x;
+        	mousePosition.y = y;
         })
         .on('mousemove', function(d, i) {
             var coordinates = d3.mouse(this);
             var x = coordinates[0];
             var y = coordinates[1];
-            // console.log(x);
-            // console.log(y);
 
             if (mousePosition.x == undefined)
                 mousePosition.x = 0;
@@ -63,7 +84,7 @@ var init = function() {
 
             if (x - mousePosition.x > 30) {
                 mousePosition.x = x;
-                if (binDivisions < 10) {
+                if (binDivisions < 9) {
                     binDivisions++;
                     redraw();
                 }
@@ -78,7 +99,8 @@ var init = function() {
             }
 
         });
-    d3.csv("test.csv", function(data) {
+    d3.csv("aircraft.csv", function(data) {
+        console.log("GGGGGGGGGGGGGGGGGGG");
         console.log(data.columns);
 
         d3.select('.dropdown-content').selectAll('a')
@@ -92,14 +114,15 @@ var init = function() {
             })
 
         data.forEach(function(d) {
-            a1.push((+d.age));
-            a2.push(+d.college);
-            a3.push(+d.hs);
-            a4.push(+d.delay);
+            a1.push((+d.X1));
+            a2.push(+d.X2);
+            a3.push(+d.X3);
+            a4.push(+d.X4);
+            a5.push(+d.Y);
         })
-        dataset = a4;
+        dataset = a1;
         redraw();
     });
-    console.log(a4);
+    console.log(a1);
 
 }
