@@ -11,8 +11,11 @@ var frequencies, max_freq, min_freq;
 var bar_mode = true; //true => bar chart, false => pie chart
 var force_graph = false;
 var svg;
-var w = 750;
-var h = 420;
+
+var margin = {top: 20, right: 70, bottom: 50, left: 70},
+    w = 750 - margin.left - margin.right,
+    h = 420 - margin.top - margin.bottom;
+
 var paddingTop = 20;
 var binWidth = 0;
 var binDivisions = 5;
@@ -61,8 +64,8 @@ var init = function() {
     svg = d3.select("body")
         // .classed('no-mouse',true)
         .append("svg")
-        .attr("width", w)
-        .attr("height", h);
+        .attr("width", w + margin.left + margin.right)
+        .attr("height", h  + margin.top + margin.bottom);
 
     d3.select('#scrollDiv')
         .on('mouseenter', function(d) {
@@ -92,7 +95,7 @@ var init = function() {
             }
             if (x - mousePosition.x < -30) {
                 mousePosition.x = x;
-                if (binDivisions >= 2) {
+                if (binDivisions > 2) {
                     binDivisions--;
                     redraw();
                 }

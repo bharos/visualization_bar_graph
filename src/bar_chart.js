@@ -1,8 +1,5 @@
 var drawBarChart = function() {
 
-
-
-
 var textGroup = svg.selectAll("text")
         .data(frequencies)
         .enter()
@@ -11,23 +8,25 @@ var textGroup = svg.selectAll("text")
             return d;
         })
         .attr("x", function(d, i) {
-            return (i * (w / frequencies.length) + (w / frequencies.length) / 2 - 10);
+            return (i * (w / frequencies.length) + (w / frequencies.length) / 2 - 10)+margin.left;
         })
         .attr("y", function(d) {
-            return ((max_freq - d) / max_freq) * 385 + 12;
+            return ((max_freq - d) / max_freq) *h + margin.top*2;
         })
         .attr('fill', 'green')
         .style('opacity', 0);
-
 
 var tickArray = [];
 var tickValues = [];
 
 for(var i=0;i<frequencies.length;i++)
 {
-  tickValues[i] = Number(binWidth*(i+1)).toFixed(2);
+
+  tickValues[i] = Number(binWidth*(i) + min_in_array).toFixed(2);
+  
 }
-  tickValues.push(0);
+  tickValues.push(Number(binWidth*(frequencies.length) + min_in_array).toFixed(2));
+  
 
     bars = svg.selectAll("rect")
         .data(frequencies)
@@ -36,7 +35,7 @@ for(var i=0;i<frequencies.length;i++)
         .attr("x", 0)
         .attr("width", w / frequencies.length - 10)
         .attr("x", function(d, i) {
-            var val = i * (w / frequencies.length);
+            var val = i * (w / frequencies.length)+margin.left;
             tickArray.push(val);
             return val;
         })
@@ -44,39 +43,39 @@ for(var i=0;i<frequencies.length;i++)
             return c20[i % 20];
         });
 
-tickArray.push(frequencies.length * (w / frequencies.length));
+tickArray.push(frequencies.length * (w / frequencies.length) + margin.left);
 
     bars
         .attr('y', function(d)
           {
-            
-           if(d==0)return 420;
-
-           return 400;
+           return h+margin.bottom;
           })
         .transition()
         .duration(2000)
         .attr("y", function(d) {
-            // return h - (d * 4);
-            if(d == 0)return 420;
-            return ((max_freq - d) / max_freq) * 385 +20;
+            return ((max_freq - d) / max_freq) *h + margin.bottom;
         })
         .attr("height",function(d)
           {
-            if(d == 0)return 400;
-            console.log("height = ",(d / max_freq) * 400);
-              return Math.abs((d / max_freq) * 385 -5);
+              return (d / max_freq) * h ;
           });
-console.log("FREQ");
-console.log(frequencies);
 
 var scale = d3.scaleOrdinal()
             .domain(tickValues)
             .range(tickArray);
-console.log(binWidth+"  FFF");
-console.log(tickValues);
+
 var axis = d3.axisBottom(scale)
             .tickSize(5).tickArguments(binDivisions);
+
+var y = d3.scaleLinear().domain([max_freq,0]).range([0,h]);
+  // Add the y Axis
+  var yAxis = svg.append("g")
+   .attr("transform", "translate("+(margin.left-6)+","+margin.bottom+")")
+      .call(d3.axisLeft(y));
+
+
+      yAxis.selectAll("text")
+      .style("font-size","12px");
 
 console.log(tickArray);
 
