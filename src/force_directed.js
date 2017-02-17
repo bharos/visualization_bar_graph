@@ -24,7 +24,7 @@ var drawForceLayout = function() {
         .force("charge", d3.forceManyBody())
         .force("center", d3.forceCenter(width / 2, height / 2));
 
-    d3.json("Miserables.json", function(error, graph) {
+    d3.json("force_directed.json", function(error, graph) {
         if (error) throw error;
 
         var link = svg.append("g")
